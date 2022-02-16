@@ -162,12 +162,12 @@ export default class WhatsAppController {
             })
 
             this._camera = new CameraController(this.el.videoCamera);
-
         });
 
         this.el.btnClosePanelCamera.on('click', e => {
             this.closeAllMainPanel();
             this.el.panelMessagesContainer.show();
+            this._camera.stop();
         });
 
         this.el.btnTakePicture.on('click', e => {
