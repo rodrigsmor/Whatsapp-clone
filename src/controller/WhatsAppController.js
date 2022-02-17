@@ -284,8 +284,8 @@ export default class WhatsAppController {
 
             this._microphoneController = new MicrophoneController();
         
-            this._microphoneController.on('play', () => {
-                
+            this._microphoneController.on('play', music => {
+                console.log('Recebi o áudio: ', music)
             });
         });
 
