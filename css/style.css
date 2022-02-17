@@ -16142,3 +16142,7 @@ html[dir=rtl] ._2ICcy:after{
     width: auto;
     margin: auto;
 }
+#info-panel-document-preview {
+    position: absolute;
+    width: 100%;
+}
