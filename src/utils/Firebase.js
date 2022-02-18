@@ -1,4 +1,5 @@
-import { initializeApp } from "firebase/app"
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { initializeApp } from "firebase/app";
 import { getFirestore } from 'firebase/firestore';
 
 export class Firebase {
@@ -22,7 +23,7 @@ export class Firebase {
         if(!this._initalized) {
             this.app = initializeApp(this._config);
             
-            this._db = getFirestore();
+            this._db = getFirestore(this.app);
             
             this._initalized = true;
         }
@@ -34,5 +35,22 @@ export class Firebase {
 
     static hd() {
         return this.app.storage();
+    }
+
+    initAuth() {
+        return new Promise((s, f) => {
+            const provider = new GoogleAuthProvider();
+            const auth = getAuth();
+
+            signInWithPopup(auth, provider).then(result=> {
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                let token = credential.accessToken;
+                let user = result.user;
+
+                s({user, token});
+            }).catch(err => {
+                console.error(err);
+            });
+        });
     }
 }
