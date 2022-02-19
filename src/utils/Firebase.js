@@ -1,56 +1,51 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { initializeApp } from "firebase/app";
-import { getFirestore } from 'firebase/firestore';
-
 export class Firebase {
     constructor() {
-        this._initalized = false;
-
         this._config = {
             apiKey: "AIzaSyDLHcK6YjS7UE488xFZHekvpuUVdI3YAAU",
             authDomain: "whatsapp-clone-a93a1.firebaseapp.com",
+            databaseURL: 'https://whatsapp-clone-a93a1.firebaseapp.com',
             projectId: "whatsapp-clone-a93a1",
             storageBucket: "whatsapp-clone-a93a1.appspot.com",
             messagingSenderId: "581697670637",
-            appId: "1:581697670637:web:335895873a7db4313c6be4",
-            measurementId: "G-CBSWX6CTZV"
         }
 
         this.init();
     }
 
     init() {
-        if(!this._initalized) {
-            this.app = initializeApp(this._config);
-            
-            this._db = getFirestore(this.app);
-            
-            this._initalized = true;
+        if (!window._initializedFirebase) {
+            firebase.initializeApp(this._config);
+
+            firebase.firestore().settings({
+                timestampsInSnapshots: true
+            });
+
+            window._initializedFirebase = true;
         }
     }
 
     static db() {
-        return this._db;
+        return firebase.firestore();
     }
 
     static hd() {
-        return this.app.storage();
+        return firebase.storage();
     }
 
     initAuth() {
         return new Promise((s, f) => {
-            const provider = new GoogleAuthProvider();
-            const auth = getAuth();
+            let provider = new firebase.auth.GoogleAuthProvider();
 
-            signInWithPopup(auth, provider).then(result=> {
-                const credential = GoogleAuthProvider.credentialFromResult(result);
-                let token = credential.accessToken;
-                let user = result.user;
+            firebase.auth().signInWithPopup(provider)
+                .then((result) => {
+                    let token = result.credential.accessToken;
+                    let user = result.user;
 
-                s({user, token});
-            }).catch(err => {
-                console.error(err);
-            });
+                    s({ user, token });
+                })
+                .catch(err => {
+                    f(err);
+                });
         });
     }
 }
