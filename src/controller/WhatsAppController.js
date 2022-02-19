@@ -2,10 +2,15 @@ import { Format } from './../utils/Format';
 import { CameraController } from './CameraController';
 import { MicrophoneController } from './MicrophoneController';
 import { DOcumentPreviewController } from './DocumentPreviewController';
+import { Firebase } from '../utils/Firebase';
 
 export default class WhatsAppController {
     constructor() {
-        console.log('WhatsappCOntroller OK');
+        console.log('WhatsappController OK');
+        
+        this._firebase = new Firebase();
+        console.log(this._firebase);
+
         this.elementsPrototype();
         this.loadElements();
         this.initEvents();
