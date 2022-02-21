@@ -172,7 +172,7 @@ export default class WhatsAppController {
                     message.fromJSON(data);
                     
                     let me = (data.from === this._user.email);
-                    
+
                     if(!this.el.panelMessagesContainer.querySelector('#_' + data.id)) {                        
                         if(!me) {
                             doc.ref.set({
@@ -373,9 +373,8 @@ export default class WhatsAppController {
         });
 
         this.el.inputPhoto.on('change', e => {
-            console.log(this.el.inputPhoto.files);
             [...this.el.inputPhoto.files].forEach(file => {
-                console.log(file);
+                Message.sendImage(this._contactActive.chatId, this._user.email, file);
             })
         });
 
