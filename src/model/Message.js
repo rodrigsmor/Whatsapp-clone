@@ -1,5 +1,6 @@
 import { Model } from './model';
-import { Firebase } from '../utils/Firebase'
+import { Format } from '../utils/Format';
+import { Firebase } from '../utils/Firebase';
 
 export class Message extends Model {
     constructor() {
@@ -7,7 +8,10 @@ export class Message extends Model {
     }
 
     get content() { return this._data.content; }
-    set content(value) { return this._data.contetn = value; }
+    set content(value) { return this._data.content = value; }
+
+    get id() { return this._data.id; }
+    set id(value) { return this._data.id = value; }
 
     get type() { return this._data.type; }
     set type(value) { return this._data.type = value; }
@@ -262,16 +266,16 @@ export class Message extends Model {
                 
             default: 
                 div.innerHTML = `
-                    <div class="font-style _3DFk6  tail">
+                    <div class="font-style _3DFk6 tail" id="${this.id}">
                         <span class="tail-container"></span>
                         <span class="tail-container highlight"></span>
                         <div class="Tkt2p">
                             <div class="_3zb-j ZhF0n">
-                                <span dir="ltr" class="selectable-text invisible-space message-text">Oi!</span>
+                                <span dir="ltr" class="selectable-text invisible-space message-text">${this.content}</span>
                             </div>
                             <div class="_2f-RV">
                                 <div class="_1DZAH">
-                                    <span class="msg-time">11:33</span>
+                                    <span class="msg-time">${Format.timeStampToTime(this.timeStamp)}</span>
                                 </div>
                             </div>
                         </div>
