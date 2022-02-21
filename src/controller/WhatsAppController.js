@@ -6,6 +6,7 @@ import { Firebase } from '../utils/Firebase';
 import { Message } from '../model/Message';
 import { User } from '../model/User';
 import { Chat } from '../model/Chat';
+import { Base64 } from '../utils/Base64';
 
 export default class WhatsAppController {
     constructor() {
@@ -185,7 +186,13 @@ export default class WhatsAppController {
                         let view = message.getViewElement(me);
 
                         this.el.panelMessagesContainer.appendChild(view);
-                    } else if(me) {
+                    } else {
+                        let view = message.getViewElement(me);
+                    
+                        this.el.panelMessagesContainer.querySelector('#_' + data.id).innerHTML = view.innerHTML;
+                    }
+            
+                    if(this.el.panelMessagesContainer.querySelector('#_' + data.id) && me) {
                         let msgEl = this.el.panelMessagesContainer.querySelector('#_' + data.id);
                         msgEl.querySelector('.message-status').innerHTML = message.getStatusViewElement().outerHTML;
                     }
@@ -416,12 +423,6 @@ export default class WhatsAppController {
         this.el.btnSendPicture.on('click', e => {
             this.el.btnSendPicture.disabled = true;
 
-            let regex = /^data:(.+);base64,(.*)$/;
-            let result = this.el.pictureCamera.src.match(regex);
-            let mimeType = result[1];
-            let ext = mimeType.split('/')[1];
-            let filename = `camera${Date.now()}.${ext}`;
-
             let picture = new Image();
             picture.src = this.el.pictureCamera.src;
             picture.onload = e => {
@@ -435,27 +436,6 @@ export default class WhatsAppController {
                 context.scale(-1, 1);
                 
                 context.drawImage(picture, 0, 0, canvas.width, canvas.height);
-
-                fetch(canvas.toDataURL(mimeType))
-                    .then(res => { return res.arrayBuffer(); })
-                    .then(buffer => { return new File([buffer], filename, { type: mimeType}) })
-                    .then(file => {
-                        Message.sendImage(
-                            this._contactActive.chatId, 
-                            this._user.email, 
-                            file
-                        );
-    
-                        this.el.btnSendPicture.disabled = false;
-                    
-                        this.closeAllMainPanel();
-                        this._camera.stop();
-                        this.el.btnReshootPanelCamera.hide();
-                        this.el.videoCamera.show();
-                        this.el.containerSendPicture.hide();
-                        this.el.containerTakePicture.show();
-                        this.el.panelMessagesContainer.show();
-                    });
             }
 
         });
@@ -531,7 +511,28 @@ export default class WhatsAppController {
         });
 
         this.el.btnSendDocument.on('click', e => {
-            console.log('enviar documento.')
+            let file = this.el.inputDocument.files[0];
+            let base64 = this.el.imgPanelDocumentPreview.src;
+
+            if(file.type === 'application/pdf') {
+                Base64.toFile(base64).then(filePreview => {
+                    Message.sendDocument(
+                        this._contactActive.chatId,
+                        this._user.email,
+                        file,
+                        filePreview,
+                        this.el.infoPanelDocumentPreview.innerHTML
+                    );
+                })
+            } else {
+                Message.sendDocument(
+                    this._contactActive.chatId,
+                    this._user.email,
+                    file,
+                );
+            }
+
+            this.el.btnClosePanelDocumentPreview.click();
         })
 
         this.el.btnAttachContact.on('click', e => {
