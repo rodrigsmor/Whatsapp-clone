@@ -4,7 +4,7 @@ export class MicrophoneController extends ClassEvent {
     constructor() {
         super();
 
-        this._mimeType = 'audio/webm'
+        this._mimeType = 'audio/webm';
         this._available = false;
 
         navigator.mediaDevices.getUserMedia({
@@ -12,9 +12,9 @@ export class MicrophoneController extends ClassEvent {
         }).then(stream => {
             this._available = true;
 
-            this._mediaStream = new MediaStream(stream);
+            this._stream = stream;
 
-            this.trigger('ready', this._mediaStream);
+            this.trigger('ready', this._stream);
         }).catch(err => {
             console.error(err);
         });
@@ -25,14 +25,14 @@ export class MicrophoneController extends ClassEvent {
     }
 
     stop() {
-        this._mediaStream.getTracks().forEach(track => {
+        this._stream.getTracks().forEach(track => {
             track.stop();
         });
     }
 
     startRecorder() {
-        if(this._available) {
-            this._mediaRecorder = new MediaRecorder(this._mediaStream, {
+        if(this.isAvailable()) {
+            this._mediaRecorder = new MediaRecorder(this._stream, {
                 mimeType: this._mimeType
             });
         
@@ -48,7 +48,6 @@ export class MicrophoneController extends ClassEvent {
                 });
 
                 let filename = `rec${Date.now()}.webm`;
-
                 let audioContext = new AudioContext();
                 let reader = new FileReader();
 
@@ -72,7 +71,7 @@ export class MicrophoneController extends ClassEvent {
     }
 
     stopRecorder() {
-        if(this._available) {
+        if(this.isAvailable()) {
             this._mediaRecorder.stop();
             this.stop();
             this.stopTimer();

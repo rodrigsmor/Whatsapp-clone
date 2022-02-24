@@ -1,7 +1,7 @@
 import { Format } from './../utils/Format';
 import { CameraController } from './CameraController';
 import { MicrophoneController } from './MicrophoneController';
-import { DOcumentPreviewController } from './DocumentPreviewController';
+import { DocumentPreviewController } from './DocumentPreviewController';
 import { Firebase } from '../utils/Firebase';
 import { Message } from '../model/Message';
 import { User } from '../model/User';
@@ -336,7 +336,7 @@ export default class WhatsAppController {
             this.el.inputProfilePhoto.click();
         });
 
-        this.el.inputProfilePhoto('change', e => {
+        this.el.inputProfilePhoto.on('change', e => {
             if(this.el.inputProfilePhoto.files.length > 0) {
                 let file = this.el.inputProfilePhoto.files[0];
 
@@ -455,8 +455,16 @@ export default class WhatsAppController {
         this.el.btnSendPicture.on('click', e => {
             this.el.btnSendPicture.disabled = true;
 
+            let regex = /^data:(.+);base64,(.*)$/;
+            let result = this.el.pictureCamera.src.match(regex);
+
+            let mimeType = result[1];
+            let ext = mimeType.split('/')[1];
+            let filename = `camera_${Date.now()}.${ext}`;
+
             let picture = new Image();
             picture.src = this.el.pictureCamera.src;
+
             picture.onload = e => {
                 let canvas = document.createElement('canvas');
                 let context = canvas.getContext('2d');
@@ -468,8 +476,27 @@ export default class WhatsAppController {
                 context.scale(-1, 1);
                 
                 context.drawImage(picture, 0, 0, canvas.width, canvas.height);
-            }
+            
+                fetch(canvas.toDataURL(mimeType))
+                    .then(res => { return res.arrayBuffer(); })
+                    .then(buffer => { return new File([buffer], filename, { mime: mimeType }); })
+                    .then(file => {
 
+                        Message.sendImage(this._contactActive.chatId, this._user.email, file);
+
+                        this.closeAllMainPanel();
+                        this._camera.stop(); // pára de gravar
+                        
+                        this.el.btnReshootPanelCamera.hide();
+                        this.el.pictureCamera.hide();
+                        this.el.videoCamera.show();
+                        this.el.containerSendPicture.hide();
+                        this.el.containerTakePicture.show();
+                        this.el.panelMessagesContainer.show();
+                        
+                        this.el.btnSendPicture.disabled = true;
+                    });
+            }
         });
 
         this.el.btnAttachDocument.on('click', e => {
@@ -491,7 +518,7 @@ export default class WhatsAppController {
 
                 let file = this.el.inputDocument.files[0];
 
-                this._documentPreviewController = new DOcumentPreviewController(file);
+                this._documentPreviewController = new DocumentPreviewController(file);
 
                 this._documentPreviewController.getPreviewData().then(result => {
 
@@ -591,7 +618,7 @@ export default class WhatsAppController {
 
             this._microphoneController = new MicrophoneController();
 
-            this._microphoneController.on('ready', music => {
+            this._microphoneController.on('ready', audio => {
                 this._microphoneController.startRecorder();
             });
 

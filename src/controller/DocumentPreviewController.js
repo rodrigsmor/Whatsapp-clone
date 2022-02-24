@@ -3,7 +3,7 @@ const path = require('path');
 
 pdfjslib.GlobalWorkerOptions.workerSrc = path.resolve(__dirname, '../../dist/pdf.worker.bundle.js');
 
-export class DOcumentPreviewController {
+export class DocumentPreviewController {
     constructor(file) {
         this._file = file;
     }
